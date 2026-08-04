@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HTML Quest - เกมเรียนรู้ HTML</title>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+:root{--bg:#0d1117;--card:#161b22;--card2:#1c2333;--border:#30363d;--text:#e6edf3;--muted:#8b949e;--accent:#00ff88;--accent-dim:#00cc6a;--gold:#e3b341;--danger:#ff6b6b;--info:#79c0ff;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Kanit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+#bgCanvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;}
+#app{position:relative;z-index:1;min-height:100vh;}
+.cf{font-family:'Fira Code',monospace;}
+.xp-outer{background:var(--border);border-radius:999px;height:10px;overflow:hidden;}
+.xp-inner{height:100%;background:linear-gradient(90deg,var(--accent-dim),var(--accent));border-radius:999px;transition:width .8s cubic-bezier(.25,1,.5,1);box-shadow:0 0 10px rgba(0,255,136,.4);}
+.gc{background:var(--card);border:1px solid var(--border);border-radius:16px;transition:all .3s ease;}
+.gc:hover{border-color:rgba(0,255,136,.25);}
+.bp{background:linear-gradient(135deg,var(--accent-dim),var(--accent));color:#0d1117;font-weight:700;padding:13px 32px;border-radius:12px;border:none;cursor:pointer;font-size:1rem;font-family:'Kanit',sans-serif;transition:all .3s ease;box-shadow:0 4px 20px rgba(0,255,136,.3);display:inline-flex;align-items:center;justify-content:center;gap:8px;}
+.bp:hover{transform:translateY(-2px);box-shadow:0 6px 30px rgba(0,255,136,.5);}.bp:active{transform:translateY(0);}.bp:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none;}
+.bs{background:var(--card2);color:var(--text);font-weight:600;padding:11px 24px;border-radius:12px;border:1px solid var(--border);cursor:pointer;font-size:.9rem;font-family:'Kanit',sans-serif;transition:all .3s ease;display:inline-flex;align-items:center;justify-content:center;gap:8px;}
+.bs:hover{border-color:var(--accent);color:var(--accent);}
+.bsm{padding:8px 18px;font-size:.82rem;border-radius:10px;}
+.code-block{background:#0a0e14;border:1px solid var(--border);border-radius:12px;padding:18px;overflow-x:auto;font-family:'Fira Code',monospace;font-size:.8rem;line-height:1.8;tab-size:2;white-space:pre;color:var(--text);}
+.code-block .tag{color:#7ee787;}.code-block .attr{color:#79c0ff;}.code-block .val{color:#ffa657;}.code-block .cmt{color:#8b949e;font-style:italic;}.code-block .doctype{color:#8b949e;}
+.pf{border:1px solid var(--border);border-radius:12px;overflow:hidden;background:#fff;}
+.pf iframe{width:100%;height:200px;border:none;display:block;}
+.pb{background:var(--card);padding:7px 14px;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--border);}
+.pd{width:10px;height:10px;border-radius:50%;}
+.ew{display:flex;background:#0a0e14;border:2px solid var(--border);border-radius:12px;overflow:hidden;transition:border-color .4s,box-shadow .4s;min-height:260px;}
+.ew.ok{border-color:var(--accent);box-shadow:0 0 20px rgba(0,255,136,.15);}
+.ew.err{border-color:var(--danger);box-shadow:0 0 15px rgba(255,107,107,.15);}
+.ln{padding:14px 0;min-width:40px;text-align:right;padding-right:10px;color:#484f58;font-family:'Fira Code',monospace;font-size:.8rem;line-height:1.8;user-select:none;border-right:1px solid var(--border);overflow:hidden;background:#0a0e14;flex-shrink:0;}
+.ce{flex:1;padding:14px;background:transparent;color:var(--text);font-family:'Fira Code',monospace;font-size:.8rem;line-height:1.8;border:none;outline:none;resize:none;tab-size:2;white-space:pre;overflow:auto;min-height:260px;width:100%;}
+.ce::selection{background:rgba(0,255,136,.2);}
+.ci{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;transition:all .3s;font-size:.88rem;}
+.ci.pass{background:rgba(0,255,136,.08);color:var(--accent);}.ci.fail{background:rgba(255,107,107,.08);color:var(--danger);}.ci.pend{background:var(--card2);color:var(--muted);}
+.ch{font-size:.76rem;color:var(--muted);margin-top:4px;margin-left:30px;padding:6px 10px;background:rgba(227,179,65,.08);border-radius:8px;border-left:3px solid var(--gold);display:none;}.ci.fail .ch{display:block;}
+.lc{position:relative;cursor:pointer;transition:all .3s;}.lc.locked{opacity:.35;cursor:not-allowed;pointer-events:none;}.lc.locked:hover{opacity:.4;}
+.lc.done{border-color:rgba(0,255,136,.3);}.lc.done .lnum{background:var(--accent);border-color:var(--accent);color:#0d1117;}
+.lc.cur{border-color:rgba(0,255,136,.5);box-shadow:0 0 20px rgba(0,255,136,.1);}
+.lnum{width:44px;height:44px;border-radius:50%;border:2px solid var(--border);background:var(--card);display:flex;align-items:center;justify-content:center;font-size:.95rem;font-weight:700;transition:all .3s;flex-shrink:0;}
+.tab-btn{padding:10px 0;flex:1;text-align:center;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;transition:all .3s;color:var(--muted);font-size:.9rem;}
+.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);}
+.sb{animation:si .4s ease forwards;border-radius:12px;padding:12px 20px;display:flex;align-items:center;gap:10px;font-weight:500;box-shadow:0 8px 30px rgba(0,0,0,.4);pointer-events:auto;}
+.sb.lv{animation:so .3s ease forwards;}
+.sb-s{background:rgba(0,255,136,.15);border:1px solid rgba(0,255,136,.3);color:var(--accent);}.sb-e{background:rgba(255,107,107,.15);border:1px solid rgba(255,107,107,.3);color:var(--danger);}.sb-i{background:rgba(227,179,65,.15);border:1px solid rgba(227,179,65,.3);color:var(--gold);}
+.confetti{position:fixed;width:10px;height:10px;z-index:100;animation:cfa linear forwards;pointer-events:none;}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;transition:all .3s;}
+.dot.done{background:var(--accent);box-shadow:0 0 6px rgba(0,255,136,.5);}.dot.no{background:var(--border);}
+@keyframes fiu{from{opacity:0;transform:translateY(30px);}to{opacity:1;transform:translateY(0);}}
+@keyframes fi{from{opacity:0;}to{opacity:1;}}
+@keyframes sd{from{opacity:0;transform:translateY(-20px);}to{opacity:1;transform:translateY(0);}}
+@keyframes fl{0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);}}
+@keyframes gl{0%,100%{text-shadow:0 0 20px rgba(0,255,136,.3);}50%{text-shadow:0 0 40px rgba(0,255,136,.6),0 0 80px rgba(0,255,136,.2);}}
+@keyframes sc{from{transform:scale(.5);opacity:0;}to{transform:scale(1);opacity:1;}}
+@keyframes cfa{0%{transform:translateY(-100vh) rotate(0deg);opacity:1;}100%{transform:translateY(100vh) rotate(720deg);opacity:0;}}
+@keyframes si{from{transform:translateX(100%);opacity:0;}to{transform:translateX(0);opacity:1;}}
+@keyframes so{from{transform:translateX(0);opacity:1;}to{transform:translateX(100%);opacity:0;}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(0,255,136,.4);}50%{box-shadow:0 0 0 10px rgba(0,255,136,0);}}
+.afiu{animation:fiu .6s ease forwards;}.afi{animation:fi .5s ease forwards;}.asd{animation:sd .4s ease forwards;}.afl{animation:fl 3s ease-in-out infinite;}.agl{animation:gl 3s ease-in-out infinite;}.apulse{animation:pulse 2s ease-in-out infinite;}
+.s1{animation-delay:.1s;opacity:0;}.s2{animation-delay:.2s;opacity:0;}.s3{animation-delay:.3s;opacity:0;}.s4{animation-delay:.4s;opacity:0;}.s5{animation-delay:.5s;opacity:0;}
+::-webkit-scrollbar{width:5px;height:5px;}::-webkit-scrollbar-track{background:var(--bg);}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+@media(max-width:768px){.code-block,.ce,.ln{font-size:.7rem;}.lnum{width:38px;height:38px;font-size:.85rem;}.ew,.ce{min-height:200px;}.editor-grid{flex-direction:column!important;}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;}}
+</style>
+</head>
+<body>
+<canvas id="bgCanvas" aria-hidden="true"></canvas>
+<div id="app" role="main"></div>
+<div id="tc" style="position:fixed;top:20px;right:20px;z-index:80;display:flex;flex-direction:column;gap:10px;pointer-events:none;"></div>
+<script>
+/* ================================================================
+   ข้อมูลด่านทั้ง 16 ด่าน
+   ================================================================ */
+const LS=[
+{id:1,title:'โครงสร้างพื้นฐาน HTML',icon:'fa-solid fa-house-chimney',
+desc:'เรียนรู้โครงสร้างหลักของเอกสาร HTML',
+pts:['ทุกเอกสาร HTML เริ่มด้วย <code class="cf" style="color:#7ee787;">&lt;!DOCTYPE html&gt;</code>','<code class="cf" style="color:#7ee787;">&lt;html&gt;</code> เป็นภาชนะหลักครอบทุกอย่าง','<code class="cf" style="color:#7ee787;">&lt;head&gt;</code> ใส่ข้อมูลเมตา เช่น <code class="cf" style="color:#7ee787;">&lt;title&gt;</code>','<code class="cf" style="color:#7ee787;">&lt;body&gt;</code> ใส่เนื้อหาที่แสดงบนหน้าจอ'],
+code:'<!DOCTYPE html>\n<html>\n  <head>\n    <title>หน้าเว็บแรก</title>\n  </head>\n  <body>\n    <h1>สวัสดีชาวโลก!</h1>\n    <p>นี่คือเว็บแรกของฉัน</p>\n  </body>\n</html>',
+prac:{title:'สร้างหน้าเว็บพื้นฐาน',desc:'เติมโค้ดใน body ให้มี h1 และ p',start:'<!DOCTYPE html>\n<html>\n  <head>\n    <title>แบบฝึกหัด</title>\n  </head>\n  <body>\n    \n  </body>\n</html>',cks:[{lb:'มีแท็ก <h1>',ck:d=>!!d.querySelector('h1'),ht:'เขียน <h1>หัวข้อ</h1>'},{lb:'มีแท็ก <p>',ck:d=>!!d.querySelector('p'),ht:'เขียน <p>ข้อความ</p>'}],xp:15,gh:'เนื้อหาที่แสดงบนหน้าเว็บต้องอยู่ภายใต้ <body>'},
+tests:[
+{title:'สร้างหน้าเว็บมีชื่อ',desc:'สร้างหน้าเว็บที่มี title เป็น "เว็บของฉัน" และมี h1',start:'<!DOCTYPE html>\n<html>\n  <head>\n    <title></title>\n  </head>\n  <body>\n    \n  </body>\n</html>',cks:[{lb:'title เป็น "เว็บของฉัน"',ck:(d,c)=>/<title>\s*เว็บของฉัน\\s*<\/title>/i.test(c)},{lb:'มีแท็ก <h1>',ck:d=>!!d.querySelector('h1')}]},
+{title:'เพิ่มย่อหน้าข้อความ',desc:'สร้างหน้าเว็บที่มีแท็ก p พร้อมข้อความ',start:'<!DOCTYPE html>\n<html>\n  <head>\n    <title>ทดสอบ</title>\n  </head>\n  <body>\n    \n  </body>\n</html>',cks:[{lb:'มีแท็ก <p>',ck:d=>!!d.querySelector('p')},{lb:'<p> มีข้อความ',ck:d=>{const p=d.querySelector('p');return p&&p.textContent.trim().length>0;}}]},
+{title:'สร้างหน้าเว็บครบถ้วน',desc:'สร้างหน้าเว็บที่มีทั้ง h1, p และ DOCTYPE ถูกต้อง',start:'',cks:[{lb:'มี DOCTYPE html',ck:(d,c)=>/<!DOCTYPE\s+html>/i.test(c)},{lb:'มี <h1>',ck:d=>!!d.querySelector('h1')},{lb:'มี <p>',ck:d=>!!d.querySelector('p')}]}
+]},
+
+{id:2,title:'หัวข้อและย่อหน้า',icon:'fa-solid fa-heading',
+desc:'เรียนรู้การสร้างหัวข้อ h1-h6 และย่อหน้า',
+pts:['<code class="cf" style="color:#7ee787;">&lt;h1&gt;</code> ถึง <code class="cf" style="color:#7ee787;">&lt;h6&gt;</code> สร้างหัวข้อ h1 ใหญ่สุด','<code class="cf" style="color:#7ee787;">&lt;p&gt;</code> สร้างย่อหน้า','<code class="cf" style="color:#7ee787;">&lt;hr&gt;</code> สร้างเส้นแบ่ง','<code class="cf" style="color:#7ee787;">&lt;br&gt;</code> ขึ้นบรรทัดใหม่'],
+code:'<h1>หัวข้อ h1</h1>\n<h2>หัวข้อ h2</h2>\n<h3>หัวข้อ h3</h3>\n<p>นี่คือย่อหน้า</p>\n<hr>\n<p>อีกย่อหน้าหนึ่ง</p>',
+prac:{title:'สร้างหัวข้อและย่อหน้า',desc:'สร้าง h1, h2 และ p',start:'<!DOCTYPE html>\n<html>\n  <head><title>ฝึกหัด</title></head>\n  <body>\n    \n  </body>\n</html>',cks:[{lb:'มี <h1>',ck:d=>!!d.querySelector('h1')},{lb:'มี <h2>',ck:d=>!!d.querySelector('h2')},{lb:'มี <p>',ck:d=>!!d.querySelector('p')}],xp:20,gh:'h1 ใหญ่สุด, h2 รองลงมา'},
+tests:[
+{title:'สร้างหัวข้อ 2 ระดับ',desc:'สร้าง h1 และ h3',start:'<!DOCTYPE html>\n<html>\n  <head><title>ทดสอบ</title></head>\n  <body>\n    \n  </body>\n</html>',cks:[{lb:'มี <h1>',ck:d=>!!d.querySelector('h1')},{lb:'มี <h3>',ck:d=>!!d.querySelector('h3')}]},
+{title:'ใช้เส้นแบ่ง',desc:'สร้าง p อย่างน้อย 2 อัน คั่นด้วย hr',start:'<!DOCTYPE html>\n<html>\n  <head><title>ทดสอบ</title></head>\n  <body>\n    \n  </body>\n</html>',cks:[{lb:'มี <p> อย่างน้อย 2',ck:d=>d.querySelectorAll('p').length>=2},{lb:'มี <hr>',ck:d=>!!d.querySelector('hr')}]},
+{title:'สร้างลำดับหัวข้อ',desc:'สร้าง h1, h2, h3 เรียงกัน',start:'<!DOCTYPE html>\n<html>\n  <head><title>ทดสอบ</title></head>\n  <body>\n    \n  </body>\n</html>',cks:[{lb:'มี <h1>',ck:d=>!!d.querySelector('h1')},{lb:'มี <h2>',ck:d=>!!d.querySelector('h2')},{lb:'มี <h3>',ck:d=>!!d.querySelector('h3')}]}
+]},
+
+{id:3,title:'จัดรูปแบบข้อความ',icon:'fa-solid fa-font',
+desc:'เรียนรู้แท็ก strong, em, u, mark',
+pts:['<code class="cf" style="color:#7ee787;">&lt;strong&gt;</code> ตัวหนา (สำคัญ)','<code class="cf" style="color:#7ee787;">&lt;em&gt;</code> ตัวเอียง (เน้น)','<code class="cf" style="color:#7ee787;">&lt;u&gt;</code> ขีดเส้นใต้','<code class="cf" style="color:#7ee787;">&lt;mark&gt;</code> ไฮไลท์'],
+code:'<p>ข้อความ <strong>ตัวหนา</strong></p>\n<p>ข้อความ <em>ตัวเอียง</em></p>\n<p>ข้อความ <u>ขีดเส้นใต้</u></p>\n<p>ข้อความ <mark>ไฮไลท์</mark></p>',
+prac:{title:'จัดรูปแบบข้อความ',desc:'ใช้ strong, em, mark ในย่อหน้า',start:'<!DOCTYPE html>\n<html>\n  <head><title>ฝึกหัด</title></head>\n  <body>\n    <p>ข้อความที่ยังไม่จัดรูปแบบ</p>\n  </body>\n</html>',cks:[{lb:'มี <strong>',ck:d=>!!d.querySelector('strong')},{lb:'มี <em>',ck:d=>!!d.querySelector('em')},{lb:'มี <mark>',ck:d=>!!d.querySelector('mark')}],xp:25,gh:'ครอบข้อความด้วยแท็ก เช่น <strong>ตัวหนา</strong>'},
+tests:[
+{title:'ใช้ตัวหนาและเอียง',desc:'สร้าง p ที่มีทั้ง strong และ em',start:'<!DOCTYPE html>\n<html>\n  <head><title>ทดสอบ</title></head>\n  <body>\n    \n  </body>\n</html>',cks:[{lb:'มี <strong>',ck:d=>!!d.querySelector('strong')},{lb:'มี <em>',ck:d=>!!d.querySelector('em')},{lb:'อยู่ใน <p> เดียวกัน',ck:d=>{const p=d.querySelector('p');return p&&p.querySelector('strong')&&p.querySelector('em');}}]},
+{title:'ใช้ขีดเส้นใต้และไฮไลท์',desc:'สร้างข้อความที่มีทั้ง u และ mark',start:'<!DOCTYPE html>\n<html>\n  <head><title>ทดสอบ</title></head>\n  <body>\n    \n  </body>\n</html>',cks:[{lb:'มี <u>',ck:d=>!!d.querySelector('u')},{lb:'มี <mark>',ck:d=>!!d.querySelector('mark')}]},
+{title:'ใช้ครบทั้ง 4 แท็ก',desc:'สร้างข้อความที่ใช้ strong, em, u, mark ครบ',start:'<!DOCTYPE html>\n<html>\n  <head><title>ทดสอบ</title></head>\n  <body>\n    \n  </body>\n</html>',cks:[{lb:'มี <strong>',ck:d=>!!d.querySelector('strong')},{lb:'มี <em>',ck:d=>!!d.querySelector('em')},{lb:'มี <u>',ck:d=>!!d.querySelector('u')},{lb:'มี <mark>',ck:d=>!!d.querySelector('mark')}]}
+]},
+
+{id:4,title:'ลิงก์และรูปภาพ',icon:'fa-solid fa-link',
+desc:'เรียนรู้การสร้างลิงก์และแสดงรูปภาพ',
+pts:['<code class="cf" style="color:#7ee787;">&lt;a href="URL"&gt;</code> สร้างลิงก์','<code class="cf" style="color:#7ee787;">&lt;img src="URL" alt="..."&gt;</code> แสดงรูป','attribute <code class="cf" style="color:#ffa657;">alt</code> สำคัญต่อการเข้าถึง','<code class="cf" style="color:#ffa657;">target="_blank"</code> เปิดแท็บใหม่'],
+code:'<a href="https://example.com">คลิกที่นี่</a>\n<br><br>\n<img src="https://picsum.photos/seed/hq4/300/150" alt="รูปตัวอย่าง">',
+prac:{title:'สร้างลิงก์และรูปภาพ',desc:'สร้าง a พร้อม href และ img พร้อม src',start:'<!DOCTYPE html>\n<html>\n  <head><title>ฝึกหัด</title></head>\n  <body>\n    \n  </body>\n</html>',cks:[{lb:'มี <a> พร้อม href',ck:(d,c)=>/<a\s+[^>]*href\\s*=/i.test(c)},{lb:'มี <img> พร้อม src',ck:(d,c)=>/<img\s+[^>]*src\\s*=/i.test(c)}],xp:25,gh:'a ใช้ href ระบุ URL, img ใช้ src ระบุที่อยู่รูป'},
+tests:[
+{title:'สร้างลิงก์ไป Google',desc:'สร้างลิงก์ไป https://google.com',start:'<!DOCTYPE html>\n<html>\n  <head><title>ทดสอบ</title></head>\n  <body>\n    \n  </body>\n</html>',cks:[{lb:'มีแท็ก <a>',ck:d=>!!d.querySelector('a')},{lb:'href ไป google.com',ck:(d,c)=>/href\s*=\\s*["']?https?:\/\/(www\.)?google\.com/i.test(c)}]},
+{title:'สร้างรูปภาพพร้อม alt',desc:'สร้างรูปภาพที่มีทั้ง src และ alt',start:'<!DOCTYPE html>\n<html>\n  <head><title>ทดสอบ</title></head>\n  <body>\n    \n  </body>\n</html>',cks:[{lb:'มี <img> พร้อม src',ck:(d,c)=>/<img\s+[^>]*src\\s*=/i.test(c)},{lb:'มี attribute alt',ck:(d,c)=>/<img\s+[^>]*alt\\s*=/i.test(c)}]},
+{title:'ลิงก์เปิดแท็บใหม่พร้อมรูป',desc:'สร้างลิงก์ target="_blank" และรูปภาพ',start:'<!DOCTYPE html>\n<html>\n  <head><title>ทดสอบ</title></head>\n  <body>\n    \n  </body>\n</html>',cks:[{lb:'<a> พร้อม target="_blank"',ck:(d,c)=>/<a\s+[^>]*target\\s*=\s*["']_blank["']/i.test(c)},{lb:'มี <img>',ck:d=>!!d.querySelector('img')}]}
+]},
+
+{id:5,title:'ลิสต์รายการ',icon:'fa-solid fa-list',
+desc:'เรียนรู้ ul, ol และ li',
+pts:['<code class="cf" style="color:#7ee787;">&lt;ul&gt;</code> ลิสต์ไม่มีลำดับ (สัญลักษณ์)','<code class="cf" style="color:#7ee787;">&lt;ol&gt;</code> ลิสต์มีลำดับ (ตัวเลข)','<code class="cf" style="color:#7ee787;">&lt;li&gt;</code> แต่ละรายการ','สามารถซ้อนลิสต์ได้'],
+code:'<ul>\n  <li>แอปเปิล</li>\n  <li>กล้วย</li>\n  <li>ส้ม</li>\n</ul>\n<ol>\n  <li>ต้มน้ำ</li>\n  <li>ใส่บะหมี่</li>\n  <li>เสิร์ฟ</li>\n</ol>',
+prac:{title:'สร้างลิสต์รายการ',desc:'สร้าง ul หรือ ol ที่มี li อย่างน้อย 3 ตัว',start:'<!DOCTYPE html>\n<html>\n  <head><title>ฝึกหัด</title></head>\n  <body>\n    \n  </body>\n</html>',cks:[{lb:'มี <ul> หรือ <ol>',ck:d=>!!(d.querySelector('ul')||d.querySelector('ol'))},{lb:'มี <li> อย่างน้อย 3',ck:d=>d.querySelectorAll('li').length>=3}],xp:20,gh:'ul=สัญลักษณ์, ol=ตัวเลข'},
+tests:[
+{title:'สร้างลิสต์ไม่มีลำดับ',desc:'สร้าง ul ที่มี li อย่างน้อย 3',start:'<!DOCTYPE html>\n<html>\n  <head><title>ทดสอบ</title></head>\n  <body>\n    \n  </body>\n</html>',cks:[{lb:'มี <ul>',ck:d=>!!d.querySelector('ul')},{lb:'มี <li> อย่างน้อย 3',ck:d=>d.querySelectorAll('ul li').length>=3}]},
+{title:'สร้างลิสต์มีลำดับ',desc:'สร้าง ol ที่มี li อย่างน้อย 4',start:'<!DOCTYPE html>\n<html>\n  <head><title>ทดสอบ</title></head>\n  <body>\n    \n  </body>\n</html>',cks:[{lb:'มี <ol>',ck:d=>!!d.querySelector('ol')},{lb:'มี <li> อย่างน้อย 4',ck:d=>d.querySelectorAll('ol li').length>=4}]},
+{title:'สร้างลิสต์ซ้อน',desc:'สร้าง ul ที่มี li ซ้อน ul อีกชั้น',start:'<!DOCTYPE html>\n<html>\n  <head><title>ทดสอบ</title></head>\n  <body>\n    \n  </body>\n</html>',cks:[{lb:'มี ul ชั้นนอก',ck:d=>!!d.querySelector('ul')},{lb:'มี ul ชั้นใน',ck:d=>!!d.querySelector('ul ul')}]}
+]},
+
+{id:6,title:'ตาราง',icon:'fa-solid fa-table',
+desc:'เรียนรู้การสร้างตาราง',
+pts:['<code class="cf" style="color:#7ee787;">&lt;table&gt;</code> สร้างตาราง','<code class="cf" style="color:#7ee787;">&lt;tr&gt;</code> สร้างแถว','<code class="cf" style="color:#7ee787;">&lt;th&gt;</code> หัวตาราง, <code class="cf" style="color:#7ee787;">&lt;td&gt;</code> เซลล์','<code class="cf" style="color:#ffa657;">colspan</code> รวมคอลัมน์'],
+code:'<table border="1" cellpadding="8" style="border-collapse:collapse;text-align:center;">\n  <tr><th>ชื่อ</th><th>อายุ</th></tr>\n  <tr><td>สมชาย</td><td>25</td></tr>\n  <tr><td>สมหญิง</td><td>30</td></tr>\n</table>',
+prac:{title:'สร้างตาราง',desc:'สร้างตารางที่มี th และ td',start:'<!DOCTYPE html>\n<html>\n  <head><title>ฝึกหัด</title></head>\n  <body>\n    \n  </body>\n</html>',cks:[{lb:'มี <table>',ck:d=>!!d.querySelector('table')},{lb:'มี <tr>',ck:d=>!!d.querySelector('tr')},{lb:'มี <th>',ck:d=>!!d.querySelector('th')},{lb:'มี <td>',ck:d=>!!d.querySelector('td')}],xp:30,gh:'โครง: table > tr > th/td'},
+tests:[
+{title:'สร้างตารางพื้นฐาน',desc:'สร้างตารางที่มี th และ td',start:'<!DOCTYPE html>\n<html>\n  <head><title>ทดสอบ</title></head>\  <body>\n    \n  </body>\n</html>',cks:[{lb:'มี <table>',ck:d=>!!d.querySelector('table')},{lb:'มี <th>',ck:d=>!!d.querySelector('th')},{lb:'มี <td>',ck:d=>!!d.querySelector('td')}]},
+{title:'ตารางหลายแถว',desc:'สร้างตารางที่มี tr อย่างน้อย 3 แถว',start:'<!DOCTYPE html>\n<html>\n  <head><title>ทดสอบ</title></head>\n  <body>\n    \n  </body>\n</html>',cks:[{lb:'มี <table>',ck:d=>!!d.querySelector('table')},{lb:'มี <tr> อย่างน้อย 3',ck:d=>d.querySelectorAll('tr').length>=3}]},
+{title:'ตาราง colspan',desc:'สร้างตารางที่ใช้ colspan',start:'<!DOCTYPE html>\n<html>\n  <head><title>ทดสอบ</title></head>\n  <body>\n    \n  </body>\n</html>',cks:[{lb:'มี <table>',ck:d=>!!d.querySelector('table')},{lb:'มี colspan',ck:(d,c)=>/colspan\s*=\\s*["']?\d+/i.test(c)}]}
+]},
+
+{id:7,title:'ฟอร์มพื้นฐาน',icon:'fa-solid fa-keyboard',
+desc:'เรียนรู้การสร้างฟอร์มรับข้อมูล',
+pts:['<code class="cf" style="color:#7ee787;">&lt;form&gt;</code> ครอบฟอร์มทั้งหมด','<code class="cf" style="color:#7ee787;">&lt;input&gt;</code> รับข้อมูล ใช้ <code class="cf" style="color:#ffa657;">type</code> กำหนดประเภท','<code class="cf" style="color:#7ee787;">&lt;label&gt;</code> ป้ายชื่อฟิลด์ เชื่อมด้วย <code class="cf" style="color:#ffa657;">for</code>','<code class="cf" style="color:#7ee787;">&lt;button&gt;</code> ปุ่มส่งฟอร์ม'],
+code:'<form>\n  <label for="fname">ชื่อ:</label><br>\n  <input type="text" id="fname" name="fname"><br><br>\n  <label for="email">อีเมล:</label><br>\n  <input type="email" id="email" name="email"><br><br>\n  <button type="submit">ส่ง</button>\n</form>',
+prac:{title:'สร้างฟอร์มพื้นฐาน',desc:'สร้างฟอร์มที่มี input text, email และ button',start:'<!DOCTYPE html>\n<html>\n  <head><title>ฝึกหัด</title></head>\n  <body>\n    \n  </body>\n</html>',cks:[{lb:'มี <form>',ck:d=>!!d.querySelector('form')},{lb:'มี <input type="text">',ck:(d,c)=>/type\s*=\\s*["']text["']/i.test(c)},{lb:'มี <input type="email">',ck:(d,c)=>/type\s*=\\s*["']email["']/i.test(c)},{lb:'มี <button>',ck:d=>!!d.querySelector('button')}],xp:30,gh:'form ครอบทุกอย่าง, input ใช้ type กำหนดประเภท'},
+tests:[
+{title:'สร้างฟอร์มชื่อ',desc:'สร้างฟอร์มที่มี input ชื่อและปุ่ม',start:'<!DOCTYPE html>\n<html>\n  <head><title>ทดสอบ</title></head>\n  <body>\n    \n  </body>\n</html>',cks:[{lb:'มี <form>',ck:d=>!!d.querySelector('form')},{lb:'มี <input>',ck:d=>!!d.querySelector('input')},{lb:'มี <button>',ck:d=>!!d.querySelector('button')}]},
+{title:'ฟอร์มพร้อม label',desc:'สร้างฟอร์มที่มี label เชื่อมกับ input',start:'<!DOCTYPE html>\n<html>\n  <head><title>ทดสอบ</title></head>\  <body>\n    \n  </body>\n</html>',cks:[{lb:'มี <label>',ck:d=>!!d.querySelector('label')},{lb:'label มี attribute for',ck:(d,c)=>/<label\s+[^>]*for\\s*=/i.test(c)},{lb:'มี <input> มี id',ck:(d,c)=>/<input\s+[^>]*id\\s*=/i.test(c)}]},
+{title:'ฟอร์มหลายประเภท input',desc:'สร้างฟอร์มที่มี text, password, submit',start:'<!DOCTYPE html>\n<html>\n  <head><title>ทดสอบ</title></head>\  <body>\n    \n  </body>\n</html>',cks:[{lb:'มี type="text"',ck:(d,c)=>/type\s*=\\s*["']text["']/i.test(c)},{lb:'มี type="password"',ck:(d,c)=>/type\s*=\\s*["']password["']/i.test(c)},{lb:'มี type="submit" หรือ button',ck:(d,c)=>/type\s*=\\s*["']submit["']/i.test(c)||/<button/i.test(c)}]}
+]},
+
+{id:8,title:'ฟอร์มขั้นสูง',icon:'fa-solid fa-rectangle-list',
+desc:'เรียนรู้ select, textarea, fieldset',
+pts:['<code class="cf" style="color:#7ee787;">&lt;select&gt;</code> และ <code class="cf" style="color:#7ee787;">&lt;option&gt;</code> ดรอปดาวน์','<code class="cf" style="color:#7ee787;">&lt;textarea&gt;</code> ข้อความหลายบรรทัด','<code class="cf" style="color:#7ee787;">&lt;fieldset&gt;</code> จัดกลุ่มฟิลด์','<code class="cf" style="color:#7ee787;">&lt;legend&gt;</code> ชื่อกลุ่ม'],
+code:'<fieldset>\n  <legend>ข้อมูลส่วนตัว</legend>\n  <label>จังหวัด:</label>\n  <select name="province">\n    <option value="">-- เลือก --</option>\n    <option value="bkk">กรุงเทพฯ</option>\n    <option value="cm">เชียงใหม่</option>\n  </select><br><br>\n  <label>ที่อยู่:</label><br>\n  <textarea rows="3" cols="30"></textarea>\n</fieldset>',
+prac:{title:'สร้างฟอร์มขั้นสูง',desc:'สร้าง select และ textarea',start:'<!DOCTYPE html>\n<html>\n  <head><title>ฝึกหัด</title></head>\  <body>\n    \n  </body>\n</html>',cks:[{lb:'มี <select>',ck:d=>!!d.querySelector('select')},{lb:'มี <option> อย่างน้อย 2',ck:d=>d.querySelectorAll('option').length>=2},{lb:'มี <textarea>',ck:d=>!!d.querySelector('textarea')}],xp:30,gh:'select ใช้กับ option, textarea สำหรับข้อความยาว'},
+tests:[
+{title:'สร้างดรอปดาวน์',desc:'สร้าง select ที่มี option อย่างน้อย 3',start:'<!DOCTYPE html>\n<html>\n  <head><title>ทดสอบ</title></head>\  <body>\n    \n  </body>\n</html>',cks:[{lb:'มี <select>',ck:d=>!!d.querySelector('select')},{lb:'มี <option> อย่างน้อย 3',ck:d=>d.querySelectorAll('option').length>=3}]},
+{title:'สร้าง textarea',desc:'สร้าง textarea ที่มี rows และ cols',start:'<!DOCTYPE html>\n<html>\n  <head><title>ทดสอบ</title></head>\  <body>\n    \n  </body>\n</html>',cks:[{lb:'มี <textarea>',ck:d=>!!d.querySelector('textarea')},{lb:'มี attribute rows',ck:(d,c)=>/<textarea\s+[^>]*rows\\s*=/i.test(c)}]},
+{title:'สร้าง fieldset',desc:'สร้าง fieldset พร้อม legend',start:'<!DOCTYPE html>\n<html>\n  <head><title>ทดสอบ</title></head>\  <body>\n    \n  </body>\n</html>',cks:[{lb:'มี <fieldset>',ck:d=>!!d.querySelector('fieldset')},{lb:'มี <legend>',ck:d=>!!d.querySelector('legend')},{lb:'legend อยู่ใน fieldset',ck:d=>{const fs=d.querySelector('fieldset');return fs&&fs.querySelector('legend');}}]}
+]},
+
+{id:9,title:'แท็กความหมาย Semantic',icon:'fa-solid fa-sitemap',
+desc:'เรียนรู้ HTML5 Semantic Tags',
+pts:['<code class="cf" style="color:#7ee787;">&lt;header&gt;</code> ส่วนหัวของหน้า/ส่วน','<code class="cf" style="color:#7ee787;">&lt;nav&gt;</code> เมนูนำทาง','<code class="cf" style="color:#7ee787;">&lt;main&gt;</code> เนื้อหาหลัก','<code class="cf" style="color:#7ee787;">&lt;article&gt;</code>, <code class="cf" style="color:#7ee787;">&lt;section&gt;</code>, <code class="cf" style="color:#7ee787;">&lt;footer&gt;</code>'],
+code:'<header>\n  <h1>เว็บไซต์ของฉัน</h1>\n  <nav>\n    <a href="#">หน้าแรก</a>\n    <a href="#">เกี่ยวกับ</a>\n  </nav>\n</header>\n<main>\n  <article>\n    <h2>บทความ</h2>\n    <p>เนื้อหาบทความ...</p>\n  </article>\n</main>\n<footer>&copy; 2024</footer>',
+prac:{title:'สร้างโครงสร้าง Semantic',desc:'สร้างหน้าเว็บที่มี header, nav, main, footer',start:'<!DOCTYPE html>\n<html>\n  <head><title>ฝึกหัด</title></head>\  <body>\n    \n  </body>\n</html>',cks:[{lb:'มี <header>',ck:d=>!!d.querySelector('header')},{lb:'มี <nav>',ck:d=>!!d.querySelector('nav')},{lb:'มี <main>',ck:d=>!!d.querySelector('main')},{lb:'มี <footer>',ck:d=>!!d.querySelector('footer')}],xp:35,gh:'Semantic tags ช่วย SEO และการเข้าถึง'},
+tests:[
+{title:'สร้าง header และ footer',desc:'สร้างหน้าที่มี header และ footer',start:'<!DOCTYPE html>\n<html>\n  <head><title>ทดสอบ</title></head>\  <body>\n    \n  </body>\n</html>',cks:[{lb:'มี <header>',ck:d=>!!d.querySelector('header')},{lb:'มี <footer>',ck:d=>!!d.querySelector('footer')}]},
+{title:'สร้าง nav ใน header',desc:'สร้าง header ที่มี nav อยู่ข้างใน',start:'<!DOCTYPE html>\n<html>\n  <head><title>ทดสอบ</title></head>\  <body>\n    \n  </body>\n</html>',cks:[{lb:'มี <header>',ck:d=>!!d.querySelector('header')},{lb:'nav อยู่ใน header',ck:d=>{const h=d.querySelector('header');return h&&h.querySelector('nav');}}]},
+{title:'สร้างโครงสร้างครบ',desc:'สร้าง header, nav, main, article, footer',start:'<!DOCTYPE html>\n<html>\n  <head><title>ทดสอบ</title></head>\  <body>\n    \n  </body>\n</html>',cks:[{lb:'มี <header>',ck:d=>!!d.querySelector('header')},{lb:'มี <main>',ck:d=>!!d.querySelector('main')},{lb:'มี <article>',ck:d=>!!d.querySelector('article')},{lb:'มี <footer>',ck:d=>!!d.querySelector('footer')}]}
+]},
+
+{id:10,title:'ออดิโอและวิดีโอ',icon:'fa-solid fa-film',
+desc:'เรียนรู้การฝังสื่อใน HTML',
+pts:['<code class="cf" style="color:#7ee787;">&lt;audio&gt;</code> ฝังไฟล์เสียง','<code class="cf" style="color:#7ee787;">&lt;video&gt;</code> ฝังไฟล์วิดีโอ','<code class="cf" style="color:#7ee787;">&lt;source&gt;</code> ระบุแหล่งไฟล์หลายรูปแบบ','attribute <code class="cf" style="color:#ffa657;">controls</code> แสดงตัวควบคุม'],
+code:'<audio controls>\n  <source src="audio.mp3" type="audio/mpeg">\n  เบราว์เซอร์ไม่รองรับ audio\n</audio>\n<br><br>\n<video controls width="300">\n  <source src="video.mp4" type="video/mp4">\n  เบราว์เซอร์ไม่รองรับ video\n</video>',
+prac:{title:'สร้างเครื่องเล่นสื่อ',desc:'สร้าง audio และ video ที่มี controls และ source',start:'<!DOCTYPE html>\n<html>\n  <head><title>ฝึกหัด</title></head>\  <body>\n    \n  </body>\n</html>',cks:[{lb:'มี <audio>',ck:d=>!!d.querySelector('audio')},{lb:'audio มี controls',ck:(d,c)=>/<audio[^>]*controls/i.test(c)},{lb:'มี <video>',ck:d=>!!d.querySelector('video')},{lb:'video มี source',ck:d=>!!d.querySelector('video source')}],xp:30,gh:'ใช้ source หลายตัวเพื่อรองรับหลาย format'},
+tests:[
+{title:'สร้างเครื่องเล่นเสียง',desc:'สร้าง audio ที่มี controls',start:'<!DOCTYPE html>\n<html>\n  <head><title>ทดสอบ</title></head>\  <body>\n    \n  </body>\  </html>',cks:[{lb:'มี <audio>',ck:d=>!!d.querySelector('audio')},{lb:'มี controls',ck:(d,c)=>/<audio[^>]*controls/i.test(c)},{lb:'มี <source>',ck:d=>!!d.querySelector('audio source')}]},
+{title:'สร้างเครื่องเล่นวิดีโอ',desc:'สร้าง video ที่มี controls และ width',start:'<!DOCTYPE html>\n<html>\n  <head><title>ทดสอบ</title></head>\  <body>\n    \n  </body>\  </html>',cks:[{lb:'มี <video>',ck:d=>!!d.querySelector('video')},{lb:'มี controls',ck:(d,c)=>/<video[^>]*controls/i.test(c)},{lb:'มี attribute width',ck:(d,c)=>/<video[^>]*width\s*=/i.test(c)}]},
+{title:'สร้างสื่อหลาย format',desc:'สร้าง video ที่มี source 2 ตัว',start:'<!DOCTYPE html>\n<html>\n  <head><title>ทดสอบ</title></head>\  <body>\n    \n  </body>\  </html>',cks:[{lb:'มี <video>',ck:d=>!!d.querySelector('video')},{lb:'มี <source> 2 ตัว',ck:d=>d.querySelectorAll('video source').length>=2}]}
+]},
+
+{id:11,title:'Canvas พื้นฐาน',icon:'fa-solid fa-paintbrush',
+desc:'เรียนรู้การวาดภาพด้วย Canvas',
+pts:['<code class="cf" style="color:#7ee787;">&lt;canvas&gt;</code> สร้างพื้นที่วาด','ระบุ <code class="cf" style="color:#ffa657;">width</code> และ <code class="cf" style="color:#ffa657;">height</code>','ใช้ JavaScript <code class="cf" style="color:#ffa657;">getContext("2d")</code>','วาดรูปทรง เช่น fillRect, arc'],
+code:'<canvas id="myCanvas" width="200" height="150" style="border:1px solid #333;"></canvas>\n<script>\n  var c = document.getElementById("myCanvas");\n  var ctx = c.getContext("2d");\n  ctx.fillStyle = "#00ff88";\n  ctx.fillRect(20, 20, 80, 60);\n  ctx.fillStyle = "#ff6b6b";\n  ctx.beginPath();\n  ctx.arc(140, 75, 30, 0, Math.PI * 2);\n  ctx.fill();\n<\/script>',
+prac:{title:'สร้าง Canvas เบื้องต้น',desc:'สร้าง canvas และวาดสี่เหลี่ยม',start:'<!DOCTYPE html>\n<html>\n  <head><title>ฝึกหัด</title></head>\  <body>\n    \n  </body>\n</html>',cks:[{lb:'มี <canvas>',ck:d=>!!d.querySelector('canvas')},{lb:'canvas มี width',ck:(d,c)=>/<canvas[^>]*width\\s*=/i.test(c)},{lb:'มี getContext',ck:(d,c)=>/getContext\s*\\(\\s*["']2d["']\s*\)/i.test(c)}],xp:35,gh:'canvas ต้องระบุ width/height และใช้ JS วาด'},
+tests:[
+{title:'สร้าง Canvas',desc:'สร้าง canvas ที่มี width และ height',start:'<!DOCTYPE html>\n<html>\n  <head><title>ทดสอบ</title></head>\  <body>\n    \n  </body>\  </html>',cks:[{lb:'มี <canvas>',ck:d=>!!d.querySelector('canvas')},{lb:'มี width',ck:(d,c)=>/<canvas[^>]*width\\s*=/i.test(c)},{lb:'มี height',ck:(d,c)=>/<canvas[^>]*height\\s*=/i.test(c)}]},
+{title:'วาดสี่เหลี่ยม',desc:'สร้าง canvas ที่วาด fillRect',start:'<!DOCTYPE html>\n<html>\n  <head><title>ทดสอบ</title></head>\  <body>\n    \n  </body>\  </html>',cks:[{lb:'มี <canvas>',ck:d=>!!d.querySelector('canvas')},{lb:'มี fillRect',ck:(d,c)=>/fillRect\s*\(/i.test(c)},{lb:'มี getContext',ck:(d,c)=>/getContext/i.test(c)}]},
+{title:'วาดวงกลม',desc:'สร้าง canvas ที่วาดวงกลมด้วย arc',start:'<!DOCTYPE html>\n<html>\n  <head><title>ทดสอบ</title></head>\  <body>\n    \n  </body>\  </html>',cks:[{lb:'มี <canvas>',ck:d=>!!d.querySelector('canvas')},{lb:'มี arc',ck:(d,c)=>/\.arc\s*\\(/i.test(c)},{lb:'มี fill',ck:(d,c)=>/\\.fill\\s*\(/i.test(c)}]}
+]},
+
+{id:12,title:'SVG พื้นฐาน',icon:'fa-solid fa-shapes',
+desc:'เรียนรู้การสร้างกราฟิกเวกเตอร์',
+pts:['<code class="cf" style="color:#7ee787;">&lt;svg&gt;</code> สร้างพื้นที่วาดเวกเตอร์','<code class="cf" style="color:#7ee787;">&lt;rect&gt;</code> สี่เหลี่ยม, <code class="cf" style="color:#7ee787;">&lt;circle&gt;</code> วงกลม','<code class="cf" style="color:#7ee787;">&lt;line&gt;</code> เส้นตรง','<code class="cf" style="color:#7ee787;">&lt;polygon&gt;</code> รูปหลายเหลี่ยม'],
+code:'<svg width="200" height="150" xmlns="http://www.w3.org/2000/svg">\n  <rect x="10" y="10" width="80" height="60" fill="#00ff88" rx="5"/>\n  <circle cx="150" cy="40" r="30" fill="#ff6b6b"/>\n  <line x1="10" y1="120" x2="190" y2="120" stroke="#e3b341" stroke-width="3"/>\n  <polygon points="100,80 120,130 80,130" fill="#79c0ff"/>\n</svg>',
+prac:{title:'สร้าง SVG เบื้องต้น',desc:'สร้าง svg ที่มี rect และ circle',start:'<!DOCTYPE html>\n<html>\n  <head><title>ฝึกหัด</title></head>\  <body>\n    \n  </body>\  </html>',cks:[{lb:'มี <svg>',ck:d=>!!d.querySelector('svg')},{lb:'มี <rect>',ck:d=>!!d.querySelector('rect')},{lb:'มี <circle>',ck:d=>!!d.querySelector('circle')}],xp:35,gh:'SVG คือกราฟิกเวกเตอร์ ขยายไม่แตก'},
+tests:[
+{title:'สร้าง SVG พื้นฐาน',desc:'สร้าง svg ที่มี rect',start:'<!DOCTYPE html>\n<html>\n  <head><title>ทดสอบ</title></head>\  <body>\n    \n  </body>\  </html>',cks:[{lb:'มี <svg>',ck:d=>!!d.querySelector('svg')},{lb:'มี <rect>',ck:d=>!!d.querySelector('rect')},{lb:'rect มี fill',ck:(d,c)=>/<rect[^>]*fill\\s*=/i.test(c)}]},
+{title:'สร้างวงกลม SVG',desc:'สร้าง svg ที่มี circle พร้อม cx, cy, r',start:'<!DOCTYPE html>\n<html>\n  <head><title>ทดสอบ</title></head>\  <body>\n    \n  </body>\  </html>',cks:[{lb:'มี <svg>',ck:d=>!!d.querySelector('svg')},{lb:'มี <circle>',ck:d=>!!d.querySelector('circle')},{lb:'circle มี r',ck:(d,c)=>/<circle[^>]*r\\s*=/i.test(c)}]},
+{title:'สร้างหลายรูปทรง',desc:'สร้าง svg ที่มี rect, circle และ line',start:'<!DOCTYPE html>\n<html>\n  <head><title>ทดสอบ</title></head>\  <body>\n    \n  </body>\  </html>',cks:[{lb:'มี <rect>',ck:d=>!!d.querySelector('rect')},{lb:'มี <circle>',ck:d=>!!d.querySelector('circle')},{lb:'มี <line>',ck:d=>!!d.querySelector('line')}]}
+]},
+
+{id:13,title:'ตารางขั้นสูง',icon:'fa-solid fa-table-cells-large',
+desc:'เรียนรู้ thead, tbody, tfoot, colspan, rowspan',
+pts:['<code class="cf" style="color:#7ee787;">&lt;thead&gt;</code>, <code class="cf" style="color:#7ee787;">&lt;tbody&gt;</code>, <code class="cf" style="color:#7ee787;">&lt;tfoot&gt;</code> แบ่งส่วนตาราง','<code class="cf" style="color:#7ee787;">&lt;caption&gt;</code> ชื่อตาราง','<code class="cf" style="color:#ffa657;">colspan</code> รวมคอลัมน์','<code class="cf" style="color:#ffa657;">rowspan</code> รวมแถว'],
+code:'<table border="1" cellpadding="6" style="border-collapse:collapse;">\n  <caption>ตารางคะแนน</caption>\n  <thead>\n    <tr><th>ชื่อ</th><th>คะแนน</th><th>เกรด</th></tr>\n  </thead>\n  <tbody>\n    <tr><td>สมชาย</td><td>85</td><td> A</td></tr>\n    <tr><td>สมหญิง</td><td>92</td><td> A</td></tr>\n  </tbody>\n  <tfoot>\n    <tr><th colspan="2">เฉลี่ย</th><th> A</th></tr>\n  </tfoot>\n</table>',
+prac:{title:'สร้างตารางขั้นสูง',desc:'สร้างตารางที่มี thead, tbody, caption',start:'<!DOCTYPE html>\n<html>\n  <head><title>ฝึกหัด</title></head>\  <body>\n    \n  </body>\  </html>',cks:[{lb:'มี <thead>',ck:d=>!!d.querySelector('thead')},{lb:'มี <tbody>',ck:d=>!!d.querySelector('tbody')},{lb:'มี <caption>',ck:d=>!!d.querySelector('caption')}],xp:35,gh:'thead/tbody/tfoot แบ่งส่วนตารางชัดเจน'},
+tests:[
+{title:'สร้าง thead และ tbody',desc:'สร้างตารางที่มี thead และ tbody',start:'<!DOCTYPE html>\n<html>\n  <head><title>ทดสอบ</title></head>\  <body>\n    \n  </body>\  </html>',cks:[{lb:'มี <table>',ck:d=>!!d.querySelector('table')},{lb:'มี <thead>',ck:d=>!!d.querySelector('thead')},{lb:'มี <tbody>',ck:d=>!!d.querySelector('tbody')}]},
+{title:'สร้าง caption',desc:'สร้างตารางที่มี caption',start:'<!DOCTYPE html>\n<html>\n  <head><title>ทดสอบ</title></head>\  <body>\n    \n  </body>\  </html>',cks:[{lb:'มี <table>',ck:d=>!!d.querySelector('table')},{lb:'มี <caption>',ck:d=>!!d.querySelector('caption')},{lb:'caption มีข้อความ',ck:d=>{const c=d.querySelector('caption');return c&&c.textContent.trim().length>0;}}]},
+{title:'ใช้ colspan และ rowspan',desc:'สร้างตารางที่ใช้ทั้ง colspan และ rowspan',start:'<!DOCTYPE html>\n<html>\n  <head><title>ทดสอบ</title></head>\  <body>\n    \n  </body>\  </html>',cks:[{lb:'มี colspan',ck:(d,c)=>/colspan\s*=\\s*["']?\d+/i.test(c)},{lb:'มี rowspan',ck:(d,c)=>/rowspan\s*=\\s*["']?\d+/i.test(c)}]}
+]},
+
+{id:14,title:'ไอเฟรมและเอมเบด',icon:'fa-solid fa-window-restore',
+desc:'เรียนรู้การฝังเนื้อหาภายนอก',
+pts:['<code class="cf" style="color:#7ee787;">&lt;iframe&gt;</code> ฝังหน้าเว็บอื่น','<code class="cf" style="color:#ffa657;">src</code> ระบุ URL ที่จะฝัง','<code class="cf" style="color:#ffa657;">srcdoc</code> ใส่ HTML โดยตรง','<code class="cf" style="color:#ffa657;">sandbox</code> จำกัดสิทธิ์เพื่อความปลอดภัย'],
+code:'<iframe src="https://example.com" width="300" height="200" style="border:1px solid #ccc;"></iframe>\n<br><br>\n<iframe srcdoc="<h1 style=\'color:green\'>สวัสดี!</h1><p>นี่คือ srcdoc</p>" width="300" height="150" style="border:1px solid #ccc;"></iframe>',
+prac:{title:'สร้างไอเฟรม',desc:'สร้าง iframe ที่มี srcdoc',start:'<!DOCTYPE html>\n<html>\n  <head><title>ฝึกหัด</title></head>\  <body>\n    \n  </body>\  </html>',cks:[{lb:'มี <iframe>',ck:d=>!!d.querySelector('iframe')},{lb:'มี srcdoc',ck:(d,c)=>/<iframe[^>]*srcdoc\\s*=/i.test(c)}],xp:25,gh:'srcdoc ใส่ HTML เล็กๆ โดยตรงลงใน iframe'},
+tests:[
+{title:'สร้าง iframe พื้นฐาน',desc:'สร้าง iframe ที่มี src',start:'<!DOCTYPE html>\n<html>\n  <head><title>ทดสอบ</title></head>\  <body>\n    \n  </body>\  </html>',cks:[{lb:'มี <iframe>',ck:d=>!!d.querySelector('iframe')},{lb:'มี src',ck:(d,c)=>/<iframe[^>]*src\\s*=/i.test(c)}]},
+{title:'สร้าง srcdoc',desc:'สร้าง iframe ที่ใช้ srcdoc แสดง h1',start:'<!DOCTYPE html>\n<html>\n  <head><title>ทดสอบ</title></head>\  <body>\n    \n  </body>\  </html>',cks:[{lb:'มี <iframe>',ck:d=>!!d.querySelector('iframe')},{lb:'มี srcdoc',ck:(d,c)=>/<iframe[^>]*srcdoc\\s*=/i.test(c)},{lb:'srcdoc มี h1',ck:(d,c)=>/srcdoc\s*=\\s*["'][^"']*<h1/i.test(c)}]},
+{title:'สร้าง iframe พร้อม sandbox',desc:'สร้าง iframe ที่มี sandbox',start:'<!DOCTYPE html>\n<html>\n  <head><title>ทดสอบ</title></head>\  <body>\n    \n  </body>\  </html>',cks:[{lb:'มี <iframe>',ck:d=>!!d.querySelector('iframe')},{lb:'มี sandbox',ck:(d,c)=>/<iframe[^>]*sandbox/i.test(c)}]}
+]},
+
+{id:15,title:'เมตาแท็กและ SEO',icon:'fa-solid fa-magnifying-glass',
+desc:'เรียนรู้เมตาแท็กสำคัญสำหรับ SEO',
+pts:['<code class="cf" style="color:#7ee787;">&lt;meta charset="UTF-8"&gt;</code> กำหนดการเข้ารหัส','<code class="cf" style="color:#7ee787;">&lt;meta name="viewport"&gt;</code> รองรับมือถือ','<code class="cf" style="color:#7ee787;">&lt;meta name="description"&gt;</code> คำอธิบายหน้า','<code class="cf" style="color:#7ee787;">&lt;meta property="og:"&gt;</code> สำหรับโซเชียลมีเดีย'],
+code:'<!DOCTYPE html>\n<html lang="th">\n<head>\n  <meta charset="UTF-8">\n  <meta name="viewport" content="width=device-width, initial-scale=1.0">\n  <meta name="description" content="เว็บเรียนรู้ HTML">\n  <meta property="og:title" content="HTML Quest">\n  <meta property="og:description" content="เกมเรียนรู้ HTML">\n  <title>เมตาแท็ก</title>\n</head>\n<body>\n  <h1>เมตาแท็กและ SEO</h1>\n</body>\n</html>',
+prac:{title:'สร้างเมตาแท็ก',desc:'สร้าง head ที่มี charset, viewport, description',start:'<!DOCTYPE html>\n<html>\n  <head>\n    <title>ทดสอบ</title>\n  </head>\n  <body>\n    <h1>หน้าเว็บ</h1>\n  </body>\n</html>',cks:[{lb:'มี meta charset',ck:(d,c)=>/<meta[^>]*charset\\s*=/i.test(c)},{lb:'มี meta viewport',ck:(d,c)=>/<meta[^>]*name\\s*=\s*["']viewport["']/i.test(c)},{lb:'มี meta description',ck:(d,c)=>/<meta[^>]*name\s*=\\s*["']description["']/i.test(c)}],xp:30,gh:'เมตาแท็กอยู่ใน head ไม่แสดงผลแต่สำคัญมาก'},
+tests:[
+{title:'สร้าง charset และ viewport',desc:'สร้างหน้าที่มี meta charset และ viewport',start:'<!DOCTYPE html>\n<html>\n  <head><title>ทดสอบ</title></head>\  <body></body>\n</html>',cks:[{lb:'มี charset',ck:(d,c)=>/<meta[^>]*charset/i.test(c)},{lb:'มี viewport',ck:(d,c)=>/viewport/i.test(c)}]},
+{title:'สร้าง description',desc:'สร้าง meta description ที่มีเนื้อหา',start:'<!DOCTYPE html>\n<html>\n  <head><title>ทดสอบ</title></head>\  <body></body>\n</html>',cks:[{lb:'มี meta description',ck:(d,c)=>/name\s*=\\s*["']description["']/i.test(c)},{lb:'มี content',ck:(d,c)=>/content\s*=\\s*["'][^"']+["']/i.test(c)}]},
+{title:'สร้าง OG Tags',desc:'สร้าง meta og:title และ og:description',start:'<!DOCTYPE html>\n<html>\n  <head><title>ทดสอบ</title></head>\  <body></body>\n</html>',cks:[{lb:'มี og:title',ck:(d,c)=>/property\s*=\\s*["']og:title["']/i.test(c)},{lb:'มี og:description',ck:(d,c)=>/property\s*=\\s*["']og:description["']/i.test(c)}]}
+]},
+
+{id:16,title:'HTML5 แท็กใหม่',icon:'fa-solid fa-wand-magic-sparkles',
+desc:'เรียนรู้แท็กใหม่ใน HTML5',
+pts:['<code class="cf" style="color:#7ee787;">&lt;details&gt;</code> และ <code class="cf" style="color:#7ee787;">&lt;summary&gt;</code> ซ่อน/แสดงเนื้อหา','<code class="cf" style="color:#7ee787;">&lt;progress&gt;</code> แถบความคืบหน้า','<code class="cf" style="color:#7ee787;">&lt;meter&gt;</code> แสดงค่าตัวเลข','<code class="cf" style="color:#7ee787;">&lt;time&gt;</code> แสดงเวลา, <code class="cf" style="color:#7ee787;">&lt;abbr&gt;</code> ตัวย่อ'],
+code:'<details>\n  <summary>คลิกเพื่อดู</summary>\n  <p>นี่คือเนื้อหาที่ซ่อนอยู่</p>\n</details>\n<br>\n<progress value="70" max="100"></progress> 70%\n<br><br>\n<meter value="0.7" min="0" max="1"></meter> 70%\n<br><br>\n<time datetime="2024-01-01">1 มกราคม 2567</time>\n<br>\n<abbr title="HyperText Markup Language">HTML</abbr>',
+prac:{title:'สร้าง details และ progress',desc:'สร้าง details/summary และ progress',start:'<!DOCTYPE html>\n<html>\n  <head><title>ฝึกหัด</title></head>\  <body>\n    \n  </body>\  </html>',cks:[{lb:'มี <details>',ck:d=>!!d.querySelector('details')},{lb:'มี <summary>',ck:d=>!!d.querySelector('summary')},{lb:'มี <progress>',ck:d=>!!d.querySelector('progress')}],xp:35,gh:'details/summary สร้าง accordion แบบไม่ต้องใช้ JS'},
+tests:[
+{title:'สร้าง details',desc:'สร้าง details ที่มี summary',start:'<!DOCTYPE html>\n<html>\n  <head><title>ทดสอบ</title></head>\  <body>\n    \n  </body>\  </html>',cks:[{lb:'มี <details>',ck:d=>!!d.querySelector('details')},{lb:'มี <summary>',ck:d=>!!d.querySelector('summary')},{lb:'summary อยู่ใน details',ck:d=>{const dt=d.querySelector('details');return dt&&dt.querySelector('summary');}}]},
+{title:'สร้าง progress',desc:'สร้าง progress ที่มี value และ max',start:'<!DOCTYPE html>\n<html>\n  <head><title>ทดสอบ</title></head>\  <body>\n    \n  </body>\  </html>',cks:[{lb:'มี <progress>',ck:d=>!!d.querySelector('progress')},{lb:'มี value',ck:(d,c)=>/<progress[^>]*value\\s*=/i.test(c)},{lb:'มี max',ck:(d,c)=>/<progress[^>]*max\\s*=/i.test(c)}]},
+{title:'สร้าง abbr และ time',desc:'สร้าง abbr พร้อม title และ time พร้อม datetime',start:'<!DOCTYPE html>\n<html>\n  <head><title>ทดสอบ</title></head>\  <body>\n    \n  </body>\  </html>',cks:[{lb:'มี <abbr>',ck:d=>!!d.querySelector('abbr')},{lb:'abbr มี title',ck:(d,c)=>/<abbr[^>]*title\\s*=/i.test(c)},{lb:'มี <time>',ck:d=>!!d.querySelector('time')},{lb:'time มี datetime',ck:(d,c)=>/<time[^>]*datetime\\s*=/i.test(c)}]}
+]}
+];
+
+/* ================================================================
+   สถานะเกม - เก็บใน localStorage
+   ================================================================ */
+const SAVE_KEY='htmlquest_v2';
+let S={screen:'map',levelId:null,testIdx:null,unlocked:1,pDone:{},tDone:{},tab:'learn'};
+
+function saveState(){
+  try{localStorage.setItem(SAVE_KEY,JSON.stringify({unlocked:S.unlocked,pDone:S.pDone,tDone:S.tDone}));}catch(e){}
+}
+function loadState(){
+  try{
+    const d=JSON.parse(localStorage.getItem(SAVE_KEY));
+    if(d){S.unlocked=d.unlocked||1;S.pDone=d.pDone||{};S.tDone=d.tDone||{};}
+  }catch(e){}
+}
+function resetState(){
+  S.unlocked=1;S.pDone={};S.tDone={};S.screen='map';saveState();render();toast('รีเซ็ตข้อมูลเรียบร้อย','info');
+}
+
+/* คำนวณความคืบหน้า */
+function getProgress(){
+  let done=0,total=LS.length;
+  LS.forEach(l=>{if(S.pDone[l.id])done++;});
+  return{done,total,pct:Math.round((done/total)*100)};
+}
+function getLevelDone(lid){
+  let c=0;if(S.pDone[lid])c++;
+  for(let i=0;i<3;i++)if(S.tDone[lid+'-'+i])c++;
+  return c;
+}
+function getTotalXP(){
+  let xp=0;
+  LS.forEach(l=>{
+    if(S.pDone[l.id])xp+=l.prac.xp;
+    for(let i=0;i<3;i++)if(S.tDone[l.id+'-'+i])xp+=15;
+  });
+  return xp;
+}
+
+/* ================================================================
+   Toast และ Confetti
+   ================================================================ */
+function toast(msg,type='info'){
+  const tc=document.getElementById('tc');
+  const cls=type==='success'?'sb-s':type==='error'?'sb-e':'sb-i';
+  const ico=type==='success'?'fa-check-circle':type==='error'?'fa-times-circle':'fa-info-circle';
+  const el=document.createElement('div');
+  el.className='sb '+cls;el.innerHTML=`<i class="fa-solid ${ico}"></i><span>${msg}</span>`;
+  tc.appendChild(el);
+  setTimeout(()=>{el.classList.add('lv');setTimeout(()=>el.remove(),300);},3000);
+}
+function confetti(){
+  const colors=['#00ff88','#ff6b6b','#e3b341','#79c0ff','#b794f4','#f6ad55'];
+  for(let i=0;i<60;i++){
+    const el=document.createElement('div');el.className='confetti';
+    el.style.left=Math.random()*100+'vw';
+    el.style.background=colors[Math.floor(Math.random()*colors.length)];
+    el.style.width=(Math.random()*8+6)+'px';
+    el.style.height=(Math.random()*8+6)+'px';
+    el.style.borderRadius=Math.random()>.5?'50%':'2px';
+    el.style.animationDuration=(Math.random()*2+2)+'s';
+    el.style.animationDelay=(Math.random()*.8)+'s';
+    document.body.appendChild(el);
+    setTimeout(()=>el.remove(),5000);
+  }
+}
+
+/* ================================================================
+   Syntax Highlighting สำหรับแสดงโค้ดตัวอย่าง
+   ================================================================ */
+function hl(code){
+  let h=code.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  h=h.replace(/(\/\/.*)/g,'<span class="cmt">$1</span>');
+  h=h.replace(/(&lt;\/?)([\w-]+)/g,'$1<span class="tag">$2</span>');
+  h=h.replace(/([\w-]+)(=)/g,'<span class="attr">$1</span>$2');
+  h=h.replace(/(".*?")/g,'<span class="val">$1</span>');
+  h=h.replace(/(&lt;!\s*DOCTYPE\s+html&gt;)/gi,'<span class="doctype">$1</span>');
+  return h;
+}
+
+/* ================================================================
+   Background Animation - อนุภาคลอย
+   ================================================================ */
+const bgC=document.getElementById('bgCanvas');
+const bgCtx=bgC.getContext('2d');
+let particles=[];
+const SYMBOLS=['<','>','/','=','"',';','{','}','#','< >','</>','< />'];
+function initBg(){
+  bgC.width=window.innerWidth;bgC.height=window.innerHeight;
+  particles=[];
+  for(let i=0;i<35;i++){
+    particles.push({
+      x:Math.random()*bgC.width,y:Math.random()*bgC.height,
+      vx:(Math.random()-.5)*.3,vy:Math.random()*.2+.1,
+      sym:SYMBOLS[Math.floor(Math.random()*SYMBOLS.length)],
+      size:Math.random()*10+10,alpha:Math.random()*.12+.03
+    });
+  }
+}
+function animBg(){
+  bgCtx.clearRect(0,0,bgC.width,bgC.height);
+  particles.forEach(p=>{
+    p.x+=p.vx;p.y+=p.vy;
+    if(p.y>bgC.height+30){p.y=-30;p.x=Math.random()*bgC.width;}
+    if(p.x<-30)p.x=bgC.width+30;if(p.x>bgC.width+30)p.x=-30;
+    bgCtx.font=p.size+'px Fira Code,monospace';
+    bgCtx.fillStyle=`rgba(0,255,136,${p.alpha})`;
+    bgCtx.fillText(p.sym,p.x,p.y);
+  });
+  requestAnimationFrame(animBg);
+}
+window.addEventListener('resize',initBg);
+initBg();animBg();
+
+/* ================================================================
+   สร้าง Line Numbers
+   ================================================================ */
+function makeLineNums(code){
+  const lines=code.split('\n');
+  return lines.map((_,i)=>i+1).join('\n');
+}
+
+/* ================================================================
+   ตรวจสอบโค้ด - สร้าง iframe แล้วรัน cks
+   ================================================================ */
+function runChecks(code,cks){
+  return new Promise(resolve=>{
+    const wrap=document.createElement('div');
+    wrap.style.cssText='position:fixed;left:-9999px;top:-9999px;width:400px;height:300px;';
+    const iframe=document.createElement('iframe');
+    iframe.sandbox='allow-scripts';
+    iframe.style.cssText='width:100%;height:100%;border:none;';
+    wrap.appendChild(iframe);
+    document.body.appendChild(wrap);
+    let resolved=false;
+    const finish=(results)=>{if(resolved)return;resolved=true;document.body.removeChild(wrap);resolve(results);};
+    iframe.onload=()=>{
+      try{
+        const doc=iframe.contentDocument||iframe.contentWindow.document;
+        const results=cks.map(c=>{
+          try{const pass=c.ck(doc,code);return{lb:c.lb,pass,ht:c.ht||''};}
+          catch(e){return{lb:c.lb,pass:false,ht:'เกิดข้อผิดพลาด: '+e.message};}
+        });
+        finish(results);
+      }catch(e){finish(cks.map(c=>({lb:c.lb,pass:false,ht:'ไม่สามารถเข้าถึง iframe'})));}
+    };
+    setTimeout(()=>finish(cks.map(c=>({lb:c.lb,pass:false,ht:'หมดเวลาโหลด'}))),3000);
+    iframe.srcdoc=code;
+  });
+}
+
+/* ================================================================
+   สร้าง Editor + Preview UI
+   ================================================================ */
+function buildEditorPreview(startCode,checkItems,onCheck){
+  const editorId='ed_'+Date.now();
+  const previewId='pv_'+Date.now();
+  let html=`
+  <div class="flex gap-4 editor-grid" style="flex-direction:row;">
+    <div class="flex-1 min-w-0">
+      <div class="text-xs font-semibold mb-2" style="color:var(--muted);"><i class="fa-solid fa-code mr-1"></i> โค้ดของคุณ</div>
+      <div class="ew" id="ew_${editorId}">
+        <div class="ln" id="ln_${editorId}">${makeLineNums(startCode)}</div>
+        <textarea class="ce" id="${editorId}" spellcheck="false">${startCode.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</textarea>
+      </div>
+    </div>
+    <div class="flex-1 min-w-0">
+      <div class="text-xs font-semibold mb-2" style="color:var(--muted);"><i class="fa-solid fa-eye mr-1"></i> ตัวอย่างผลลัพธ์</div>
+      <div class="pf">
+        <div class="pb"><div class="pd" style="background:#ff5f56;"></div><div class="pd" style="background:#ffbd2e;"></div><div class="pd" style="background:#27c93f;"></div><span class="ml-2 text-xs" style="color:var(--muted);">preview</span></div>
+        <iframe id="${previewId}" sandbox="allow-scripts" style="width:100%;height:200px;border:none;"></iframe>
+      </div>
+    </div>
+  </div>`;
+
+  if(checkItems){
+    html+=`<div class="mt-4 space-y-2" id="cks_${editorId}">`;
+    checkItems.forEach((c,i)=>{
+      html+=`<div class="ci pend" id="ck_${editorId}_${i}"><i class="fa-solid fa-circle" style="font-size:.5rem;"></i><span>${c.lb}</span><div class="ch">${c.ht||''}</div></div>`;
+    });
+    html+=`</div>`;
+    html+=`<div class="mt-4 flex gap-3 flex-wrap"><button class="bp" id="btn_ck_${editorId}"><i class="fa-solid fa-play"></i> ตรวจสอบ</button><button class="bs bsm" id="btn_rst_${editorId}"><i class="fa-solid fa-rotate-left"></i> รีเซ็ต</button></div>`;
+  }
+
+  /* หลัง render แล้วจะ init */
+  setTimeout(()=>{
+    const ta=document.getElementById(editorId);
+    const ln=document.getElementById(lnElId(editorId));
+    const pv=document.getElementById(previewId);
+    if(!ta)return;
+    const origStart=startCode;
+    function sync(){
+      const v=ta.value;
+      ln.textContent=makeLineNums(v);
+      pv.srcdoc=v;
+      const ew=document.getElementById('ew_'+editorId);
+      if(ew){ew.classList.remove('ok','err');}
+    }
+    ta.addEventListener('input',sync);
+    ta.addEventListener('keydown',function(e){
+      if(e.key==='Tab'){
+        e.preventDefault();
+        const s=ta.selectionStart,en=ta.selectionEnd;
+        ta.value=ta.value.substring(0,s)+'  '+ta.value.substring(en);
+        ta.selectionStart=ta.selectionEnd=s+2;
+        sync();
+      }
+    });
+    sync();
+
+    if(checkItems&&onCheck){
+      const btnCk=document.getElementById('btn_ck_'+editorId);
+      const btnRst=document.getElementById('btn_rst_'+editorId);
+      if(btnCk)btnCk.addEventListener('click',async()=>{
+        btnCk.disabled=true;btnCk.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> กำลังตรวจสอบ...';
+        const results=await runChecks(ta.value,checkItems);
+        const ew=document.getElementById('ew_'+editorId);
+        let allPass=true;
+        results.forEach((r,i)=>{
+          const el=document.getElementById('ck_'+editorId+'_'+i);
+          if(!el)return;
+          el.className='ci '+(r.pass?'pass':'fail');
+          el.querySelector('i').className='fa-solid '+(r.pass?'fa-check-circle':'fa-times-circle');
+          if(!r.pass)allPass=false;
+        });
+        if(ew){ew.classList.add(allPass?'ok':'err');}
+        btnCk.disabled=false;btnCk.innerHTML='<i class="fa-solid fa-play"></i> ตรวจสอบ';
+        onCheck(results,allPass);
+      });
+      if(btnRst)btnRst.addEventListener('click',()=>{
+        ta.value=origStart;sync();
+        checkItems.forEach((_,i)=>{
+          const el=document.getElementById('ck_'+editorId+'_'+i);
+          if(el){el.className='ci pend';el.querySelector('i').className='fa-solid fa-circle';}
+        });
+        const ew=document.getElementById('ew_'+editorId);
+        if(ew)ew.classList.remove('ok','err');
+      });
+    }
+  },50);
+
+  return html;
+}
+function lnElId(editorId){return 'ln_'+editorId;}
+
+/* ================================================================
+   Render: แผนที่ด่าน
+   ================================================================ */
+function renderMap(){
+  const prog=getProgress();
+  const xp=getTotalXP();
+  let html=`<div class="max-w-4xl mx-auto px-4 py-8 afiu">`;
+  /* หัว */
+  html+=`<div class="text-center mb-8 s1 afiu">
+    <div class="inline-flex items-center gap-3 mb-3">
+      <i class="fa-solid fa-code text-3xl" style="color:var(--accent);"></i>
+      <h1 class="text-3xl md:text-4xl font-extrabold agl">HTML Quest</h1>
+    </div>
+    <p style="color:var(--muted);" class="text-sm mb-4">เรียนรู้ HTML ผ่านการลงมือทำจริง - 16 ด่าน</p>
+    <div class="max-w-md mx-auto">
+      <div class="flex justify-between text-xs mb-1" style="color:var(--muted);"><span>ความคืบหน้า</span><span>${prog.done}/${prog.total} ด่าน</span></div>
+      <div class="xp-outer"><div class="xp-inner" style="width:${prog.pct}%;"></div></div>
+      <div class="flex justify-between text-xs mt-2"><span style="color:var(--gold);"><i class="fa-solid fa-coins mr-1"></i>${xp} XP</span>
+      <button onclick="resetState()" class="text-xs hover:underline" style="color:var(--danger);background:none;border:none;cursor:pointer;font-family:Kanit;">รีเซ็ตข้อมูล</button></div>
+    </div>
+  </div>`;
+
+  /* กริดด่าน */
+  html+=`<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">`;
+  LS.forEach((l,idx)=>{
+    const locked=l.id>S.unlocked;
+    const done=!!S.pDone[l.id];
+    const ld=getLevelDone(l.id);
+    const cls=locked?'lc locked':done?'lc done':'lc'+(l.id===S.unlocked?' cur':'');
+    html+=`<div class="gc ${cls} p-4 s${Math.min(idx%4+1,5)} afiu" ${!locked?`onclick="openLevel(${l.id})"`:''}>`;
+    html+=`<div class="flex items-center gap-3">`;
+    html+=`<div class="lnum">${locked?'<i class="fa-solid fa-lock text-xs"></i>':l.id}</div>`;
+    html+=`<div class="flex-1 min-w-0">`;
+    html+=`<div class="font-bold text-sm flex items-center gap-2"><i class="${l.icon} text-xs" style="color:${done?'var(--accent)':'var(--muted)'}"></i>${l.id}. ${l.title}</div>`;
+    html+=`<div class="text-xs mt-1" style="color:var(--muted);">${locked?'ผ่านด่านก่อนหน้าก่อน':'แบบฝึกหัด + แบบทดสอบ 3 ข้อ'}</div>`;
+    if(!locked){
+      html+=`<div class="flex gap-1 mt-2">`;
+      for(let i=0;i<4;i++){
+        html+=`<div class="dot ${i<ld?'done':'no'}"></div>`;
+      }
+      html+=`<span class="text-xs ml-2" style="color:var(--muted);">${ld}/4</span>`;
+      html+=`</div>`;
+    }
+    html+=`</div></div></div>`;
+  });
+  html+=`</div>`;
+
+  /* จบเกม */
+  if(prog.done===prog.total){
+    html+=`<div class="gc p-6 mt-6 text-center afiu" style="border-color:var(--accent);background:rgba(0,255,136,.05);">
+      <i class="fa-solid fa-trophy text-4xl mb-3" style="color:var(--gold);"></i>
+      <h2 class="text-xl font-bold mb-2" style="color:var(--accent);">ยินดีด้วย! คุณผ่านทุกด่านแล้ว</h2>
+      <p style="color:var(--muted);" class="text-sm">คุณได้เรียนรู้ HTML ครบทุกหมวดหมู่ รวม ${xp} XP</p>
+    </div>`;
+  }
+  html+=`</div>`;
+  document.getElementById('app').innerHTML=html;
+}
+
+/* ================================================================
+   Render: หน้าด่าน (เรียนรู้ / ฝึกหัด / แบบทดสอบ)
+   ================================================================ */
+function renderLevel(){
+  const l=LS.find(x=>x.id===S.levelId);
+  if(!l){S.screen='map';render();return;}
+  const ld=getLevelDone(l.id);
+  let html=`<div class="max-w-5xl mx-auto px-4 py-6 afiu">`;
+  /* หัว */
+  html+=`<div class="flex items-center gap-3 mb-4">
+    <button class="bs bsm" onclick="goMap()"><i class="fa-solid fa-arrow-left"></i></button>
+    <div class="lnum apulse" style="width:40px;height:40px;font-size:.85rem;">${l.id}</div>
+    <div class="flex-1 min-w-0">
+      <div class="font-bold text-lg flex items-center gap-2"><i class="${l.icon}" style="color:var(--accent);"></i>${l.title}</div>
+      <div class="text-xs" style="color:var(--muted);">${l.desc} &mdash; ${ld}/4 เสร็จแล้ว</div>
+    </div>
+    <div class="flex gap-1">${[0,1,2,3].map(i=>`<div class="dot ${i<ld?'done':'no'}"></div>`).join('')}</div>
+  </div>`;
+
+  /* แท็บ */
+  html+=`<div class="flex mb-6" style="border-bottom:1px solid var(--border);">`;
+  const tabs=[{k:'learn',lb:'เรียนรู้',ico:'fa-book-open'},{k:'practice',lb:'ฝึกหัด',ico:'fa-pencil'},{k:'test',lb:'แบบทดสอบ',ico:'fa-clipboard-check'}];
+  tabs.forEach(t=>{
+    html+=`<div class="tab-btn ${S.tab===t.k?'active':''}" onclick="switchTab('${t.k}')"><i class="fa-solid ${t.ico} mr-1"></i>${t.lb}</div>`;
+  });
+  html+=`</div>`;
+
+  /* เนื้อหาแท็บ */
+  if(S.tab==='learn'){
+    html+=renderLearnTab(l);
+  }else if(S.tab==='practice'){
+    html+=renderPracticeTab(l);
+  }else{
+    html+=renderTestTab(l);
+  }
+
+  html+=`</div>`;
+  document.getElementById('app').innerHTML=html;
+}
+
+function renderLearnTab(l){
+  let h=`<div class="grid md:grid-cols-2 gap-6 afiu">`;
+  /* ซ้าย: คำอธิบาย */
+  h+=`<div>
+    <h3 class="font-bold text-lg mb-4" style="color:var(--accent);"><i class="fa-solid fa-lightbulb mr-2"></i>สิ่งที่จะเรียนรู้</h3>
+    <div class="space-y-3">`;
+  l.pts.forEach(p=>{
+    h+=`<div class="gc p-3 text-sm flex items-start gap-2"><i class="fa-solid fa-chevron-right mt-1 text-xs" style="color:var(--accent);"></i><span>${p}</span></div>`;
+  });
+  h+=`</div></div>`;
+  /* ขวา: โค้ดตัวอย่าง + พรีวิว */
+  h+=`<div>
+    <h3 class="font-bold text-lg mb-4" style="color:var(--info);"><i class="fa-solid fa-code mr-2"></i>ตัวอย่างโค้ด</h3>
+    <div class="code-block mb-4">${hl(l.code)}</div>
+    <div class="pf"><div class="pb"><div class="pd" style="background:#ff5f56;"></div><div class="pd" style="background:#ffbd2e;"></div><div class="pd" style="background:#27c93f;"></div><span class="ml-2 text-xs" style="color:var(--muted);">preview</span></div>
+    <iframe id="learn_preview" sandbox="allow-scripts" style="width:100%;height:200px;border:none;"></iframe></div>
+  </div>`;
+  h+=`</div>`;
+  setTimeout(()=>{const pv=document.getElementById('learn_preview');if(pv)pv.srcdoc=l.code;},50);
+  return h;
+}
+
+function renderPracticeTab(l){
+  const p=l.prac;
+  const alreadyDone=!!S.pDone[l.id];
+  let h=`<div class="afiu">`;
+  h+=`<div class="gc p-4 mb-4 flex items-start gap-3">
+    <i class="fa-solid fa-pencil mt-1" style="color:var(--gold);"></i>
+    <div><div class="font-bold">${p.title}</div><div class="text-sm" style="color:var(--muted);">${p.desc}</div></div>
+    <div class="ml-auto text-sm font-bold" style="color:var(--gold);">+${p.xp} XP</div>
+  </div>`;
+  if(alreadyDone){
+    h+=`<div class="gc p-4 mb-4 flex items-center gap-3" style="border-color:var(--accent);background:rgba(0,255,136,.05);">
+      <i class="fa-solid fa-check-circle text-xl" style="color:var(--accent);"></i>
+      <span class="font-semibold" style="color:var(--accent);">ผ่านแบบฝึกหัดนี้แล้ว</span>
+    </div>`;
+  }
+  h+=buildEditorPreview(p.start,p.cks,(results,allPass)=>{
+    if(allPass&&!S.pDone[l.id]){
+      S.pDone[l.id]=true;
+      if(l.id>=S.unlocked&&l.id<LS.length)S.unlocked=l.id+1;
+      saveState();confetti();
+      toast('ผ่านแบบฝึกหัด! +'+p.xp+' XP','success');
+      setTimeout(()=>renderLevel(),800);
+    }else if(!allPass){
+      toast('ยังผ่านไม่ครบ ลองอีกครั้ง','error');
+    }
+  });
+  h+=`<div class="gc p-3 mt-4 text-sm" style="border-left:3px solid var(--info);"><i class="fa-solid fa-circle-info mr-1" style="color:var(--info);"></i>${p.gh}</div>`;
+  h+=`</div>`;
+  return h;
+}
+
+function renderTestTab(l){
+  let h=`<div class="afiu">`;
+  h+=`<h3 class="font-bold mb-4"><i class="fa-solid fa-clipboard-check mr-2" style="color:var(--gold);"></i>แบบทดสอบ 3 ข้อ (+15 XP ต่อข้อ)</h3>`;
+  h+=`<div class="space-y-3">`;
+  l.tests.forEach((t,i)=>{
+    const done=!!S.tDone[l.id+'-'+i];
+    h+=`<div class="gc p-4 flex items-center gap-4 cursor-pointer ${done?'':'hover:border-[var(--accent)]'}" onclick="openTest(${l.id},${i})" style="${done?'border-color:var(--accent);background:rgba(0,255,136,.03);':''}">
+      <div class="lnum" style="width:36px;height:36px;font-size:.8rem;${done?'background:var(--accent);border-color:var(--accent);color:#0d1117;':''}">${done?'<i class="fa-solid fa-check text-xs"></i>':(i+1)}</div>
+      <div class="flex-1 min-w-0">
+        <div class="font-semibold text-sm">${t.title}</div>
+        <div class="text-xs" style="color:var(--muted);">${t.desc}</div>
+      </div>
+      <i class="fa-solid fa-chevron-right text-xs" style="color:var(--muted);"></i>
+    </div>`;
+  });
+  h+=`</div></div>`;
+  return h;
+}
+
+/* ================================================================
+   Render: หน้าแบบทดสอบ
+   ================================================================ */
+function renderTest(){
+  const l=LS.find(x=>x.id===S.levelId);
+  if(!l){S.screen='map';render();return;}
+  const t=l.tests[S.testIdx];
+  if(!t){S.screen='level';S.tab='test';render();return;}
+  const alreadyDone=!!S.tDone[l.id+'-'+S.testIdx];
+
+  let html=`<div class="max-w-5xl mx-auto px-4 py-6 afiu">`;
+  html+=`<div class="flex items-center gap-3 mb-4">
+    <button class="bs bsm" onclick="backToLevel()"><i class="fa-solid fa-arrow-left"></i></button>
+    <div class="flex-1 min-w-0">
+      <div class="font-bold">ข้อที่ ${S.testIdx+1}/3: ${t.title}</div>
+      <div class="text-xs" style="color:var(--muted);">${t.desc}</div>
+    </div>
+    <span class="text-sm font-bold" style="color:var(--gold);">+15 XP</span>
+  </div>`;
+
+  if(alreadyDone){
+    html+=`<div class="gc p-4 mb-4 flex items-center gap-3" style="border-color:var(--accent);background:rgba(0,255,136,.05);">
+      <i class="fa-solid fa-check-circle" style="color:var(--accent);"></i>
+      <span style="color:var(--accent);">ทำข้อนี้แล้ว</span>
+    </div>`;
+  }
+
+  html+=buildEditorPreview(t.start,t.cks,(results,allPass)=>{
+    if(allPass&&!S.tDone[l.id+'-'+S.testIdx]){
+      S.tDone[l.id+'-'+S.testIdx]=true;
+      saveState();confetti();
+      toast('ถูกต้อง! +15 XP','success');
+      setTimeout(()=>{
+        if(S.testIdx<2){S.testIdx++;render();}
+        else{S.screen='level';S.tab='test';render();}
+      },800);
+    }else if(!allPass){
+      toast('ยังไม่ถูกต้อง ลองอีกครั้ง','error');
+    }
+  });
+
+  /* นำทาง */
+  html+=`<div class="flex justify-between mt-4">`;
+  if(S.testIdx>0)html+=`<button class="bs bsm" onclick="S.testIdx--;render();"><i class="fa-solid fa-arrow-left mr-1"></i>ข้อก่อนหน้า</button>`;
+  else html+=`<div></div>`;
+  if(S.testIdx<2)html+=`<button class="bs bsm" onclick="S.testIdx++;render();">ข้อถัดไป<i class="fa-solid fa-arrow-right ml-1"></i></button>`;
+  else html+=`<button class="bs bsm" onclick="backToLevel()">กลับหน้าด่าน<i class="fa-solid fa-arrow-right ml-1"></i></button>`;
+  html+=`</div>`;
+
+  html+=`</div>`;
+  document.getElementById('app').innerHTML=html;
+}
+
+/* ================================================================
+   Navigation
+   ================================================================ */
+function goMap(){S.screen='map';render();}
+function openLevel(id){S.screen='level';S.levelId=id;S.tab='learn';render();}
+function switchTab(t){S.tab=t;renderLevel();}
+function openTest(lid,idx){S.screen='test';S.levelId=lid;S.testIdx=idx;render();}
+function backToLevel(){S.screen='level';S.tab='test';render();}
+
+/* ================================================================
+   Render Router
+   ================================================================ */
+function render(){
+  switch(S.screen){
+    case 'map':renderMap();break;
+    case 'level':renderLevel();break;
+    case 'test':renderTest();break;
+    default:S.screen='map';renderMap();
+  }
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ================================================================
+   เริ่มต้น
+   ================================================================ */
+loadState();
+render();
+</script>
+</body>
+</html>
